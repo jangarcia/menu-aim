@@ -26,6 +26,19 @@
   const addClasses = manipulateClass('add');
   const removeClasses = manipulateClass('remove');
 
+  let previousCoordinates = null;
+  let currentCoordinates = null;
+
+  // Record the last 2 mouse coordinates.
+  function saveMouseCoordinates(event) {
+    previousCoordinates = currentCoordinates;
+    currentCoordinates = {
+      x: event.pageX,
+      y: event.pageY
+    };
+  }
+  window.addEventListener('mousemove', saveMouseCoordinates);
+
   function menuAim(menuElement, options) {
 
     const contentDirection = options.contentDirection || 'right';
@@ -41,8 +54,6 @@
     let activeMenuItem = null;
     let timeoutId = null;
 
-    let previousCoordinates = null;
-    let currentCoordinates = null;
     let lastCheckedCoordinates = null;
 
     // Compute the pixel coordinates of the four corners of the block taken up
@@ -88,15 +99,6 @@
         decreasingCorner = topRight;
         increasingCorner = bottomRight;
         break;
-    }
-
-    // Record the last 2 mouse coordinates.
-    function saveMouseCoordinates(event) {
-      previousCoordinates = currentCoordinates;
-      currentCoordinates = {
-        x: event.pageX,
-        y: event.pageY
-      };
     }
 
     // Cancel pending menu item activations.
@@ -238,7 +240,6 @@
       menuItem.addEventListener('click', onMenuItemClick);
       menuItem.addEventListener('mouseenter', onMenuItemMouseEnter);
     });
-    window.addEventListener('mousemove', saveMouseCoordinates);
     window.addEventListener('scroll', deactivateActiveMenuItem);
     window.addEventListener('click', deactivateIfClickedOutsideMenu);
     menuElement.addEventListener('mouseleave', onMouseLeave);
@@ -249,7 +250,6 @@
         menuItem.removeEventListener('click', onMenuItemClick);
         menuItem.removeEventListener('mouseenter', onMenuItemMouseEnter);
       });
-      window.removeEventListener('mousemove', saveMouseCoordinates);
       window.removeEventListener('scroll', deactivateActiveMenuItem);
       window.removeEventListener('click', deactivateIfClickedOutsideMenu);
       menuElement.removeEventListener('mouseleave', onMouseLeave);
