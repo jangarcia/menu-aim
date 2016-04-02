@@ -17,14 +17,12 @@
   function noop() {}
 
   function manipulateClass(classListMethod) {
-    return (element, classNames) => {
-      classNames.forEach((className) => {
-        element.classList[classListMethod](className);
-      });
+    return (element, className) => {
+      element.classList[classListMethod](className);
     };
   }
-  const addClasses = manipulateClass('add');
-  const removeClasses = manipulateClass('remove');
+  const addClass = manipulateClass('add');
+  const removeClass = manipulateClass('remove');
 
   let previousCoordinates = null;
   let currentCoordinates = null;
@@ -44,12 +42,13 @@
     const contentDirection = options.contentDirection || 'right';
     const delay = options.delay || 200;
     const menuItemSelector = options.menuItemSelector || '.menu-aim__item';
-    const menuItemActiveClassName = [].concat(options.menuItemActiveClassName || 'menu-aim__item--active');
-    const delayingClassName = [].concat(options.delayingClassName || 'menu-aim--delaying');
+    const menuItemActiveClassName = options.menuItemActiveClassName || 'menu-aim__item--active';
+    const delayingClassName = options.delayingClassName || 'menu-aim--delaying';
     const activateCallback = options.activateCallback || noop;
     const deactivateCallback = options.deactivateCallback || noop;
     const mouseEnterCallback = options.mouseEnterCallback || noop;
     const mouseLeaveCallback = options.mouseLeaveCallback || noop;
+    const threshold = options.threshold || 50;
 
     let activeMenuItem = null;
     let timeoutId = null;
@@ -65,7 +64,7 @@
     };
     const topRight = {
       x: offset.left + menuElement.offsetWidth,
-      y: topLeft.y
+      y: topLeft.y - threshold
     };
     const bottomLeft = {
       x: offset.left,
@@ -73,7 +72,7 @@
     };
     const bottomRight = {
       x: offset.left + menuElement.offsetWidth,
-      y: bottomLeft.y
+      y: bottomLeft.y + threshold
     };
 
     // Our expectations for decreasing or increasing gradients depends on
@@ -111,7 +110,7 @@
     function deactivateActiveMenuItem() {
       if (activeMenuItem) {
         // If there is an `activeMenuItem`, deactivate it.
-        removeClasses(activeMenuItem, menuItemActiveClassName);
+        removeClass(activeMenuItem, menuItemActiveClassName);
         deactivateCallback(activeMenuItem);
         activeMenuItem = null;
       }
@@ -127,7 +126,7 @@
       }
       deactivateActiveMenuItem();
       // Activate the given `menuItem`.
-      addClasses(menuItem, menuItemActiveClassName);
+      addClass(menuItem, menuItemActiveClassName);
       activateCallback(menuItem);
       activeMenuItem = menuItem;
     }
@@ -173,7 +172,7 @@
 
       ) {
         lastCheckedCoordinates = null;
-        removeClasses(menuElement, delayingClassName);
+        removeClass(menuElement, delayingClassName);
         return true;
       }
 
@@ -181,7 +180,8 @@
       // the `activeMenuItem`, so we should wait before attempting to activate
       // the new menu item again.
       lastCheckedCoordinates = currentCoordinates;
-      addClasses(menuElement, delayingClassName);
+      addClass(menuElement, delayingClassName);
+      console.log('delaying');
       return false;
     }
 
@@ -198,6 +198,7 @@
       }, delay);
     }
 
+    let mouseLeaveTimeoutId = null;
     function onMouseLeave() {
       // Attempt to deactivate the `activeMenuItem` if we have left the menu
       // `menuElement` entirely.
@@ -205,7 +206,14 @@
         cancelPendingMenuItemActivations();
         mouseLeaveCallback(activeMenuItem);
         deactivateActiveMenuItem();
+        // return;
       }
+      // if (mouseLeaveTimeoutId) {
+      //   clearTimeout(mouseLeaveTimeoutId);
+      // }
+      // mouseLeaveTimeoutId = setTimeout(() => {
+      //   onMouseLeave();
+      // }, delay);
     }
 
     function onMenuItemClick() {
