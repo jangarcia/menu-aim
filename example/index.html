@@ -9,6 +9,7 @@
         padding: 0;
       }
       body {
+        font-size: 32px;
         font-family: 'Helvetica', 'Arial', sans-serif;
       }
       li {
@@ -18,16 +19,16 @@
         text-decoration: none;
       }
       .menu-aim {
-        margin-top: 100px;
+        margin-top: 200px;
         width: 200px;
+        position: relative;
       }
       .menu-aim__item {
-        position: relative;
         width: 200px;
       }
       .menu-aim a {
         display: block;
-        padding: 10px;
+        padding: 20px;
         color: blue;
       }
       .menu-aim a:hover,
@@ -85,14 +86,6 @@
         </ul>
       </li>
     </ul>
-    <script src="/lib/index.js"></script>
-    <script>
-      window.menuAim(document.querySelector('.menu-aim'), {
-        contentDirection: 'right',
-        menuItemSelector: '.menu-aim__item',
-        menuItemActiveClassName: 'menu-aim__item--active',
-        delayingClassName: 'menu-aim--delaying'
-      });
-    </script>
+    <script src="/bundle.js"></script>
   </body>
 </html>
