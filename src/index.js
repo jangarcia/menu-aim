@@ -1,8 +1,10 @@
 // Compute the two `x` and two `y` coordinates of the given `element`.
-const computeCoordinates = (element) => {
+const computeCoordinates = (element, useClientCoordinates) => {
   const rect = element.getBoundingClientRect();
-  const top = rect.top + (window.pageYOffset || document.documentElement.scrollTop);
-  const left = rect.left + (window.pageXOffset || document.documentElement.scrollLeft);
+  let top = rect.top;
+  if(!useClientCoordinates) top += (window.pageYOffset || document.documentElement.scrollTop);
+  let left = rect.left;
+  if(!useClientCoordinates) left += (window.pageXOffset || document.documentElement.scrollLeft);
   const computedStyles = window.getComputedStyle(element);
   return {
     top,
@@ -17,22 +19,11 @@ const computeGradient = (pointA, pointB) => {
   return (pointB.y - pointA.y) / (pointB.x - pointA.x);
 };
 
-// Record the last 2 mouse coordinates.
-let previousCoordinates = null;
-let currentCoordinates = null;
-const saveMouseCoordinates = (event) => {
-  previousCoordinates = currentCoordinates;
-  currentCoordinates = {
-    x: event.pageX,
-    y: event.pageY
-  };
-};
-window.addEventListener('mousemove', saveMouseCoordinates);
-
 export default (menuElement, options) => {
 
   const contentDirection = options.contentDirection || 'right';
   const delay = options.delay || 200;
+  const useClientCoordinates = options.useClientCoordinates || false;
   const menuItemSelector = options.menuItemSelector || '.menu-aim__item';
   const menuItemActiveClassName = options.menuItemActiveClassName || 'menu-aim__item--active';
   const delayingClassName = options.delayingClassName || 'menu-aim--delaying';
@@ -44,7 +35,7 @@ export default (menuElement, options) => {
 
   // Compute the pixel coordinates of the four corners of the block taken up
   // by the items that match the `menuItemSelector`.
-  const {top, right, bottom, left} = computeCoordinates(menuElement);
+  const {top, right, bottom, left} = computeCoordinates(menuElement, useClientCoordinates);
   const topLeftCorner = { y: top - threshold, x: left - threshold };
   const topRightCorner = { y: top - threshold, x: right + threshold };
   const bottomLeftCorner = { y: bottom + threshold, x: left - threshold };
@@ -76,6 +67,18 @@ export default (menuElement, options) => {
   }
 
   let activeMenuItem = null;
+
+  // Record the last 2 mouse coordinates.
+  let previousCoordinates = null;
+  let currentCoordinates = null;
+  const saveMouseCoordinates = (event) => {
+      previousCoordinates = currentCoordinates;
+      currentCoordinates = {
+          x: useClientCoordinates ? event.clientX : event.pageX,
+          y: useClientCoordinates ? event.clientY : event.pageY
+      };
+  };
+  window.addEventListener('mousemove', saveMouseCoordinates);
 
   // If there is an `activeMenuItem`, deactivate it.
   const deactivateActiveMenuItem = () => {
