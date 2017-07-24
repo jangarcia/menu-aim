@@ -9,12 +9,12 @@ const computeCoordinates = (element) => {
     bottom: top + element.offsetHeight,
     left
   };
-}
+};
 
 // Compute the gradient of a line drawn from `pointA` to `pointB`.
 const computeGradient = (pointA, pointB) => {
   return (pointB.y - pointA.y) / (pointB.x - pointA.x);
-}
+};
 
 // Record the last 2 mouse coordinates.
 let previousCoordinates = null;
@@ -25,7 +25,7 @@ const saveMouseCoordinates = (event) => {
     x: event.pageX,
     y: event.pageY
   };
-}
+};
 window.addEventListener('mousemove', saveMouseCoordinates);
 
 export default (menuElement, options) => {
@@ -33,10 +33,13 @@ export default (menuElement, options) => {
   const contentDirection = options.contentDirection || 'right';
   const delay = options.delay || 200;
   const menuItemSelector = options.menuItemSelector || '.menu-aim__item';
-  const menuItemSubMenuSelector = options.menuItemSubMenuSelector || '.menu-aim__item-submenu';
   const menuItemActiveClassName = options.menuItemActiveClassName || 'menu-aim__item--active';
   const delayingClassName = options.delayingClassName || 'menu-aim--delaying';
   const threshold = options.threshold || 50;
+  const activateCallback = options.activateCallback || noop;
+  const deactivateCallback = options.deactivateCallback || noop;
+  const mouseEnterCallback = options.mouseEnterCallback || noop;
+  const mouseLeaveCallback = options.mouseLeaveCallback || noop;
 
   // Compute the pixel coordinates of the four corners of the block taken up
   // by the items that match the `menuItemSelector`.
@@ -76,10 +79,11 @@ export default (menuElement, options) => {
   // If there is an `activeMenuItem`, deactivate it.
   const deactivateActiveMenuItem = () => {
     if (activeMenuItem) {
-      activeMenuItem.classList.remove(menuItemActiveClassName)
+      activeMenuItem.classList.remove(menuItemActiveClassName);
+      deactivateCallback(activeMenuItem);
       activeMenuItem = null;
     }
-  }
+  };
 
   // Set `activeMenuItem` to the given `menuItem`, and activate
   // it immediately.
@@ -93,7 +97,8 @@ export default (menuElement, options) => {
     // Activate the given `menuItem`.
     activeMenuItem = menuItem;
     menuItem.classList.add(menuItemActiveClassName);
-  }
+    activateCallback(menuItem);
+  };
 
   let lastCheckedCoordinates = null;
 
@@ -148,7 +153,7 @@ export default (menuElement, options) => {
     lastCheckedCoordinates = currentCoordinates;
     menuElement.classList.add(delayingClassName)
     return false;
-  }
+  };
 
   let timeoutId = null;
 
@@ -157,7 +162,7 @@ export default (menuElement, options) => {
     if (timeoutId) {
       clearTimeout(timeoutId);
     }
-  }
+  };
 
   // Check if we should activate the given `menuItem`. If we find that the
   // mouse is moving towards the content of the `activeMenuItem`, attempt to
@@ -170,29 +175,33 @@ export default (menuElement, options) => {
     timeoutId = setTimeout(() => {
       possiblyActivateMenuItem(menuItem);
     }, delay);
-  }
+  };
 
   // Immediately activate the menu item that was clicked.
   const handleMenuItemClick = (event) => {
     cancelPendingMenuItemActivations();
     activateMenuItem(event.target);
-  }
+  };
 
   // Attempt to activate the menu item that the mouse is currently
   // mousing over.
   const handleMenuItemMouseEnter = (event) => {
     const isMouseEnter = activeMenuItem === null;
     possiblyActivateMenuItem(event.target);
-  }
+    if (isMouseEnter) {
+        mouseEnterCallback(activeMenuItem);
+    }
+  };
 
   // Attempt to deactivate the `activeMenuItem` if we have left the menu
   // `menuElement` entirely.
   const handleMouseLeave = () => {
     if (shouldChangeActiveMenuItem()) {
       cancelPendingMenuItemActivations();
+      mouseLeaveCallback(activeMenuItem);
       deactivateActiveMenuItem();
     }
-  }
+  };
 
   const handleClickOutsideMenu = (event) => {
     let targetElement = event.target;
@@ -205,7 +214,7 @@ export default (menuElement, options) => {
     if (!targetElement) {
       deactivateActiveMenuItem();
     }
-  }
+  };
 
   // Bind the required event listeners.
   const menuItems = [].slice.call(menuElement.querySelectorAll(menuItemSelector));
