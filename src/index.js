@@ -1,5 +1,5 @@
 // Compute the two `x` and two `y` coordinates of the given `element`.
-const computeElementCoordinates = (element) => {
+const computeCoordinates = (element) => {
   const rect = element.getBoundingClientRect();
   const top = rect.top + (window.pageXOffset || document.documentElement.scrollLeft);
   const left = rect.left + (window.pageYOffset || document.documentElement.scrollTop);
@@ -30,17 +30,17 @@ window.addEventListener('mousemove', saveMouseCoordinates);
 
 export default (menuElement, options) => {
 
-  const submenuDirection = options.submenuDirection || 'right';
+  const contentDirection = options.contentDirection || 'right';
   const delay = options.delay || 200;
   const menuItemSelector = options.menuItemSelector || '.menu-aim__item';
-  const subMenuSelector = options.subMenuSelector || '.menu-aim__item-submenu';
+  const menuItemSubMenuSelector = options.menuItemSubMenuSelector || '.menu-aim__item-submenu';
   const menuItemActiveClassName = options.menuItemActiveClassName || 'menu-aim__item--active';
   const delayingClassName = options.delayingClassName || 'menu-aim--delaying';
   const threshold = options.threshold || 50;
 
   // Compute the pixel coordinates of the four corners of the block taken up
   // by the items that match the `menuItemSelector`.
-  const {top, right, bottom, left} = computeElementCoordinates(menuElement);
+  const {top, right, bottom, left} = computeCoordinates(menuElement);
   const topLeftCorner = { y: top - threshold, x: left - threshold };
   const topRightCorner = { y: top - threshold, x: right + threshold };
   const bottomLeftCorner = { y: bottom + threshold, x: left - threshold };
@@ -52,7 +52,7 @@ export default (menuElement, options) => {
   // the mouse coordinate and the top-right corner to decrease over time.
   let decreasingCorner;
   let increasingCorner;
-  switch (submenuDirection) {
+  switch (contentDirection) {
     case 'top':
       decreasingCorner = topLeftCorner;
       increasingCorner = topRightCorner;
@@ -93,24 +93,6 @@ export default (menuElement, options) => {
     // Activate the given `menuItem`.
     activeMenuItem = menuItem;
     menuItem.classList.add(menuItemActiveClassName);
-
-    if (submenuDirection === 'left' || submenuDirection === 'right') {
-      const subMenu = menuItem.querySelector(subMenuSelector);
-      const subMenuHeight = subMenu.offsetHeight;
-      const {top} = computeElementCoordinates(menuItem);
-      const windowHeight = window.innerHeight;
-      const menuItemTopToWindowBottom = windowHeight - (top - window.scrollY);
-      if (subMenuHeight > windowHeight) {
-        subMenu.style.height = `${windowHeight}px`;
-        subMenu.style.top = `-${windowHeight - menuItemTopToWindowBottom}px`;
-        return;
-      }
-      if (menuItemTopToWindowBottom < subMenuHeight) {
-        subMenu.style.top = `-${subMenuHeight - menuItemTopToWindowBottom}px`
-      } else {
-        subMenu.style.top = `0px`;
-      }
-    }
   }
 
   let lastCheckedCoordinates = null;
