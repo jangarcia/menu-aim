@@ -9,12 +9,12 @@ const computeElementCoordinates = (element) => {
     bottom: top + element.offsetHeight,
     left
   };
-};
+}
 
 // Compute the gradient of a line drawn from `pointA` to `pointB`.
 const computeGradient = (pointA, pointB) => {
   return (pointB.y - pointA.y) / (pointB.x - pointA.x);
-};
+}
 
 // Record the last 2 mouse coordinates.
 let previousCoordinates = null;
@@ -25,22 +25,15 @@ const saveMouseCoordinates = (event) => {
     x: event.pageX,
     y: event.pageY
   };
-};
+}
 window.addEventListener('mousemove', saveMouseCoordinates);
-
-let windowHeight = null;
-const saveWindowHeight = () => {
-  windowHeight = window.innerHeight;
-};
-window.addEventListener('resize', saveWindowHeight);
-saveWindowHeight();
 
 export default (menuElement, options) => {
 
   const submenuDirection = options.submenuDirection || 'right';
   const delay = options.delay || 200;
   const menuItemSelector = options.menuItemSelector || '.menu-aim__item';
-  const submenuSelector = options.submenuSelector || '.menu-aim__item-submenu';
+  const subMenuSelector = options.subMenuSelector || '.menu-aim__item-submenu';
   const menuItemActiveClassName = options.menuItemActiveClassName || 'menu-aim__item--active';
   const delayingClassName = options.delayingClassName || 'menu-aim--delaying';
   const threshold = options.threshold || 50;
@@ -78,34 +71,15 @@ export default (menuElement, options) => {
       break;
   }
 
-  const repositionSubmenu = (menuItem) => {
-    if (submenuDirection !== 'left' && submenuDirection !== 'right') {
-      return;
-    }
-    const {top} = computeElementCoordinates(menuItem);
-    const menuItemTopToWindowBottom = windowHeight - (top - window.scrollY);
-    const submenu = menuItem.querySelector(submenuSelector);
-    const submenuHeight = submenu.offsetHeight;
-    if (submenuHeight >= windowHeight) {
-      submenu.style.cssText = `top:-${windowHeight - menuItemTopToWindowBottom}px;height:${windowHeight}px;`;
-      return;
-    }
-    if (menuItemTopToWindowBottom < submenuHeight) {
-      submenu.style.top = `-${submenuHeight - menuItemTopToWindowBottom}px`;
-    } else {
-      submenu.style.top = '0px';
-    }
-  };
-
   let activeMenuItem = null;
 
   // If there is an `activeMenuItem`, deactivate it.
   const deactivateActiveMenuItem = () => {
     if (activeMenuItem) {
-      activeMenuItem.classList.remove(menuItemActiveClassName);
+      activeMenuItem.classList.remove(menuItemActiveClassName)
       activeMenuItem = null;
     }
-  };
+  }
 
   // Set `activeMenuItem` to the given `menuItem`, and activate
   // it immediately.
@@ -119,8 +93,25 @@ export default (menuElement, options) => {
     // Activate the given `menuItem`.
     activeMenuItem = menuItem;
     menuItem.classList.add(menuItemActiveClassName);
-    repositionSubmenu(menuItem);
-  };
+
+    if (submenuDirection === 'left' || submenuDirection === 'right') {
+      const subMenu = menuItem.querySelector(subMenuSelector);
+      const subMenuHeight = subMenu.offsetHeight;
+      const {top} = computeElementCoordinates(menuItem);
+      const windowHeight = window.innerHeight;
+      const menuItemTopToWindowBottom = windowHeight - (top - window.scrollY);
+      if (subMenuHeight > windowHeight) {
+        subMenu.style.height = `${windowHeight}px`;
+        subMenu.style.top = `-${windowHeight - menuItemTopToWindowBottom}px`;
+        return;
+      }
+      if (menuItemTopToWindowBottom < subMenuHeight) {
+        subMenu.style.top = `-${subMenuHeight - menuItemTopToWindowBottom}px`
+      } else {
+        subMenu.style.top = `0px`;
+      }
+    }
+  }
 
   let lastCheckedCoordinates = null;
 
@@ -165,7 +156,7 @@ export default (menuElement, options) => {
 
     ) {
       lastCheckedCoordinates = null;
-      menuElement.classList.remove(delayingClassName);
+      menuElement.classList.remove(delayingClassName)
       return true;
     }
 
@@ -173,9 +164,9 @@ export default (menuElement, options) => {
     // the `activeMenuItem`, so we should wait before attempting to activate
     // the new menu item again.
     lastCheckedCoordinates = currentCoordinates;
-    menuElement.classList.add(delayingClassName);
+    menuElement.classList.add(delayingClassName)
     return false;
-  };
+  }
 
   let timeoutId = null;
 
@@ -184,7 +175,7 @@ export default (menuElement, options) => {
     if (timeoutId) {
       clearTimeout(timeoutId);
     }
-  };
+  }
 
   // Check if we should activate the given `menuItem`. If we find that the
   // mouse is moving towards the content of the `activeMenuItem`, attempt to
@@ -197,19 +188,20 @@ export default (menuElement, options) => {
     timeoutId = setTimeout(() => {
       possiblyActivateMenuItem(menuItem);
     }, delay);
-  };
+  }
 
   // Immediately activate the menu item that was clicked.
   const handleMenuItemClick = (event) => {
     cancelPendingMenuItemActivations();
     activateMenuItem(event.target);
-  };
+  }
 
   // Attempt to activate the menu item that the mouse is currently
   // mousing over.
   const handleMenuItemMouseEnter = (event) => {
+    const isMouseEnter = activeMenuItem === null;
     possiblyActivateMenuItem(event.target);
-  };
+  }
 
   // Attempt to deactivate the `activeMenuItem` if we have left the menu
   // `menuElement` entirely.
@@ -218,7 +210,7 @@ export default (menuElement, options) => {
       cancelPendingMenuItemActivations();
       deactivateActiveMenuItem();
     }
-  };
+  }
 
   const handleClickOutsideMenu = (event) => {
     let targetElement = event.target;
@@ -231,7 +223,7 @@ export default (menuElement, options) => {
     if (!targetElement) {
       deactivateActiveMenuItem();
     }
-  };
+  }
 
   // Bind the required event listeners.
   const menuItems = [].slice.call(menuElement.querySelectorAll(menuItemSelector));
@@ -252,4 +244,4 @@ export default (menuElement, options) => {
     window.removeEventListener('click', handleClickOutsideMenu);
   };
 
-};
+}
