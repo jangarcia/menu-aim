@@ -1,12 +1,13 @@
 // Compute the two `x` and two `y` coordinates of the given `element`.
 const computeCoordinates = (element) => {
   const rect = element.getBoundingClientRect();
-  const top = rect.top + (window.pageXOffset || document.documentElement.scrollLeft);
-  const left = rect.left + (window.pageYOffset || document.documentElement.scrollTop);
+  const top = rect.top + (window.pageYOffset || document.documentElement.scrollTop);
+  const left = rect.left + (window.pageXOffset || document.documentElement.scrollLeft);
+  const computedStyles = window.getComputedStyle(element);
   return {
     top,
-    right: left + element.offsetWidth,
-    bottom: top + element.offsetHeight,
+    right: left + element.clientWidth - parseInt(computedStyles.getPropertyValue('padding-left')) - parseInt(computedStyles.getPropertyValue('padding-right')),
+    bottom: top + element.clientHeight - parseInt(computedStyles.getPropertyValue('padding-top')) - parseInt(computedStyles.getPropertyValue('padding-bottom')),
     left
   };
 };
@@ -143,7 +144,7 @@ export default (menuElement, options) => {
 
     ) {
       lastCheckedCoordinates = null;
-      menuElement.classList.remove(delayingClassName)
+      menuElement.classList.remove(delayingClassName);
       return true;
     }
 
@@ -151,7 +152,7 @@ export default (menuElement, options) => {
     // the `activeMenuItem`, so we should wait before attempting to activate
     // the new menu item again.
     lastCheckedCoordinates = currentCoordinates;
-    menuElement.classList.add(delayingClassName)
+    menuElement.classList.add(delayingClassName);
     return false;
   };
 
