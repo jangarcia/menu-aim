@@ -36,10 +36,10 @@ export default (menuElement, options) => {
   const menuItemActiveClassName = options.menuItemActiveClassName || 'menu-aim__item--active';
   const delayingClassName = options.delayingClassName || 'menu-aim--delaying';
   const threshold = options.threshold || 50;
-  const activateCallback = options.activateCallback || noop;
-  const deactivateCallback = options.deactivateCallback || noop;
-  const mouseEnterCallback = options.mouseEnterCallback || noop;
-  const mouseLeaveCallback = options.mouseLeaveCallback || noop;
+  const activateCallback = options.activateCallback || null;
+  const deactivateCallback = options.deactivateCallback || null;
+  const mouseEnterCallback = options.mouseEnterCallback || null;
+  const mouseLeaveCallback = options.mouseLeaveCallback || null;
 
   // Compute the pixel coordinates of the four corners of the block taken up
   // by the items that match the `menuItemSelector`.
@@ -80,7 +80,7 @@ export default (menuElement, options) => {
   const deactivateActiveMenuItem = () => {
     if (activeMenuItem) {
       activeMenuItem.classList.remove(menuItemActiveClassName);
-      deactivateCallback(activeMenuItem);
+      if(deactivateCallback) deactivateCallback(activeMenuItem);
       activeMenuItem = null;
     }
   };
@@ -97,7 +97,7 @@ export default (menuElement, options) => {
     // Activate the given `menuItem`.
     activeMenuItem = menuItem;
     menuItem.classList.add(menuItemActiveClassName);
-    activateCallback(menuItem);
+    if(activateCallback) activateCallback(menuItem);
   };
 
   let lastCheckedCoordinates = null;
@@ -189,7 +189,7 @@ export default (menuElement, options) => {
     const isMouseEnter = activeMenuItem === null;
     possiblyActivateMenuItem(event.target);
     if (isMouseEnter) {
-        mouseEnterCallback(activeMenuItem);
+        if(mouseEnterCallback) mouseEnterCallback(activeMenuItem);
     }
   };
 
@@ -198,7 +198,7 @@ export default (menuElement, options) => {
   const handleMouseLeave = () => {
     if (shouldChangeActiveMenuItem()) {
       cancelPendingMenuItemActivations();
-      mouseLeaveCallback(activeMenuItem);
+      if(mouseLeaveCallback) mouseLeaveCallback(activeMenuItem);
       deactivateActiveMenuItem();
     }
   };
